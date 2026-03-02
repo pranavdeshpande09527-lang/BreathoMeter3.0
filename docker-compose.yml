@@ -1,0 +1,126 @@
+version: "3.9"
+
+services:
+  # ─── Redis Cache ──────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: breathometer_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./infrastructure/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─── ML Inference Service ─────────────────────────────────
+  ml-service:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    container_name: breathometer_ml
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      - ML_MODEL_PATH=/app/models/ensemble.onnx
+      - SCALER_PATH=/app/models/scaler.pkl
+    volumes:
+      - ./ml/models:/app/models:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Backend FastAPI ──────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: breathometer_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - ML_SERVICE_URL=http://ml-service:8001
+    depends_on:
+      redis:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Frontend Next.js ─────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: breathometer_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # ─── Nginx Reverse Proxy ──────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: breathometer_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - production
+
+  # ─── MLflow Tracking Server ───────────────────────────────
+  mlflow:
+    image: python:3.11-slim
+    container_name: breathometer_mlflow
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    command: >
+      sh -c "pip install mlflow -q && mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri /mlruns
+      --default-artifact-root /mlartifacts"
+    volumes:
+      - mlflow_data:/mlruns
+      - mlflow_artifacts:/mlartifacts
+    profiles:
+      - ml
+
+volumes:
+  redis_data:
+  mlflow_data:
+  mlflow_artifacts:
+
+networks:
+  default:
+    name: breathometer_network
