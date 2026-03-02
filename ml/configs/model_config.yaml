@@ -1,0 +1,61 @@
+# ─── Paths ────────────────────────────────────────────────────
+paths:
+  model_output_dir: "./models"
+  onnx_filename: "ensemble.onnx"
+  scaler_filename: "scaler.pkl"
+
+# ─── Data ─────────────────────────────────────────────────────
+data:
+  target_column: "respiratory_disease_risk"
+  base_features:
+    - pm25
+    - pm10
+    - aqi
+    - age
+    - exposure_hours
+    - smoking
+    - pre_existing_condition
+
+# ─── Training ─────────────────────────────────────────────────
+training:
+  val_size: 0.2
+  random_seed: 42
+
+# ─── Ensemble Weights ─────────────────────────────────────────
+ensemble:
+  weights:
+    rf: 0.35
+    xgb: 0.35
+    lr: 0.20
+    lgbm: 0.10
+
+  random_forest:
+    n_estimators: 300
+    max_depth: 8
+    min_samples_leaf: 4
+
+  xgboost:
+    n_estimators: 300
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.8
+
+  logistic_regression:
+    C: 1.0
+    max_iter: 1000
+
+  lightgbm:
+    n_estimators: 300
+    max_depth: 6
+    learning_rate: 0.05
+
+# ─── Calibration ──────────────────────────────────────────────
+calibration:
+  method: "isotonic"    # isotonic or sigmoid (Platt scaling)
+  cv_folds: 5
+
+# ─── SHAP ─────────────────────────────────────────────────────
+shap:
+  enabled: true
+  max_display: 14
+  plot_type: "bar"
