@@ -5,19 +5,18 @@ import { TrendingUp } from "lucide-react";
 import { useState } from "react";
 import {
     ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
-    CartesianGrid, Tooltip, ReferenceLine, Legend
+    CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
 
 const timeRanges = ["1H", "6H", "24H", "7D"] as const;
 type Range = (typeof timeRanges)[number];
 
-// Simulated data
 const generate24H = () =>
     Array.from({ length: 24 }, (_, i) => ({
         time: `${String(i).padStart(2, "0")}:00`,
-        AQI: Math.round(30 + Math.sin(i / 3) * 30 + Math.random() * 20),
-        "PM2.5": Math.round(15 + Math.sin(i / 4) * 15 + Math.random() * 10),
-        O3: Math.round(20 + Math.sin(i / 5) * 10 + Math.random() * 8),
+        AQI: Math.round(30 + Math.sin(i / 3) * 30 + Math.random() * 18),
+        "PM2.5": Math.round(15 + Math.sin(i / 4) * 14 + Math.random() * 8),
+        O3: Math.round(20 + Math.sin(i / 5) * 10 + Math.random() * 7),
     }));
 
 const DATA: Record<Range, ReturnType<typeof generate24H>> = {
@@ -30,10 +29,10 @@ const DATA: Record<Range, ReturnType<typeof generate24H>> = {
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     return (
-        <div className="custom-tooltip text-xs">
-            <p className="font-semibold text-gray-700 mb-1">{label}</p>
+        <div className="custom-tooltip">
+            <p className="font-semibold text-gray-700 mb-1.5 text-xs">{label}</p>
             {payload.map((p: any) => (
-                <p key={p.name} style={{ color: p.color }}>
+                <p key={p.name} className="text-xs mb-0.5" style={{ color: p.color }}>
                     {p.name}: <span className="font-bold">{p.value}</span>
                 </p>
             ))}
@@ -47,16 +46,16 @@ export function AQITrendChart() {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-3xl p-6 shadow-card flex-1"
+            transition={{ delay: 0.35 }}
+            className="card flex-1"
         >
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-emerald-600" />
+                <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                        <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
                     </div>
                     <div>
                         <p className="text-sm font-semibold text-gray-900">AQI Trend</p>
@@ -64,26 +63,31 @@ export function AQITrendChart() {
                     </div>
                 </div>
 
-                {/* Legend + Time range */}
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> AQI</span>
-                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-orange-400 inline-block" /> PM2.5</span>
-                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-violet-400 inline-block" /> O₃</span>
+                    {/* Legend */}
+                    <div className="hidden sm:flex items-center gap-3">
+                        {[["#10B981", "AQI"], ["#F97316", "PM2.5"], ["#6366F1", "O₃"]].map(([c, n]) => (
+                            <span key={n} className="flex items-center gap-1.5 text-xs text-gray-500">
+                                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: c }} />
+                                {n}
+                            </span>
+                        ))}
                     </div>
-                    <div className="flex items-center gap-1 bg-gray-50 rounded-full p-1">
+
+                    {/* Time range toggle */}
+                    <div className="flex items-center bg-gray-100 rounded-full p-0.5 gap-0.5">
                         {timeRanges.map((r) => (
                             <button
                                 key={r}
                                 onClick={() => setRange(r)}
-                                className={`relative px-3 py-1 rounded-full text-xs font-medium transition ${range === r ? "text-white" : "text-gray-500 hover:text-gray-700"
+                                className={`relative px-3 py-1.5 rounded-full text-xs font-medium transition-all ${range === r ? "text-emerald-700" : "text-gray-500 hover:text-gray-700"
                                     }`}
                             >
                                 {range === r && (
                                     <motion.div
-                                        layoutId="range-bg"
-                                        className="absolute inset-0 bg-emerald-500 rounded-full"
-                                        transition={{ type: "spring", bounce: 0.25 }}
+                                        layoutId="range-pill"
+                                        className="absolute inset-0 bg-white shadow-sm rounded-full"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
                                     />
                                 )}
                                 <span className="relative">{r}</span>
@@ -94,31 +98,25 @@ export function AQITrendChart() {
             </div>
 
             {/* Chart */}
-            <div className="h-56">
+            <div className="h-52">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                    <AreaChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
                         <defs>
-                            <linearGradient id="aqi-grad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10B981" stopOpacity={0.25} />
-                                <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="pm25-grad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#F97316" stopOpacity={0.2} />
-                                <stop offset="95%" stopColor="#F97316" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="o3-grad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.2} />
-                                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
-                            </linearGradient>
+                            {[["aqi", "#10B981"], ["pm25", "#F97316"], ["o3", "#6366F1"]].map(([id, c]) => (
+                                <linearGradient key={id} id={`${id}-g`} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={c} stopOpacity={0.15} />
+                                    <stop offset="95%" stopColor={c} stopOpacity={0} />
+                                </linearGradient>
+                            ))}
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                         <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} interval={3} />
                         <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                        <ReferenceLine y={100} stroke="#EF4444" strokeDasharray="4 4" label={{ value: "Unhealthy threshold", position: "right", fontSize: 9, fill: "#EF4444" }} />
+                        <ReferenceLine y={100} stroke="#EF4444" strokeDasharray="4 4" label={{ value: "Unhealthy", position: "right", fontSize: 9, fill: "#EF4444" }} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Area type="monotone" dataKey="AQI" stroke="#10B981" strokeWidth={2.5} fill="url(#aqi-grad)" dot={false} activeDot={{ r: 4 }} />
-                        <Area type="monotone" dataKey="PM2.5" stroke="#F97316" strokeWidth={2} fill="url(#pm25-grad)" dot={false} activeDot={{ r: 4 }} />
-                        <Area type="monotone" dataKey="O3" stroke="#8B5CF6" strokeWidth={2} fill="url(#o3-grad)" dot={false} activeDot={{ r: 4 }} />
+                        <Area type="monotone" dataKey="AQI" stroke="#10B981" strokeWidth={2.5} fill="url(#aqi-g)" dot={false} activeDot={{ r: 4, fill: "#10B981" }} />
+                        <Area type="monotone" dataKey="PM2.5" stroke="#F97316" strokeWidth={2} fill="url(#pm25-g)" dot={false} activeDot={{ r: 4, fill: "#F97316" }} />
+                        <Area type="monotone" dataKey="O3" stroke="#6366F1" strokeWidth={2} fill="url(#o3-g)" dot={false} activeDot={{ r: 4, fill: "#6366F1" }} />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>

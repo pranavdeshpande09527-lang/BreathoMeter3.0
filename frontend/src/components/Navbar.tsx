@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Bell, Settings, ChevronDown, Activity } from "lucide-react";
+import { Search, Bell, Settings, ChevronDown } from "lucide-react";
 
 const tabs = ["Dashboard", "History", "Reports", "Alerts"] as const;
 type Tab = (typeof tabs)[number];
@@ -17,84 +17,84 @@ export function Navbar({ activeTab, onTabChange, notificationCount = 3 }: Navbar
     const [searchOpen, setSearchOpen] = useState(false);
 
     return (
-        <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm">
-            <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
+        <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200">
+            <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between gap-8">
 
-                {/* ─── Logo ──────────────────────────────── */}
-                <div className="flex items-center gap-3 shrink-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-200">
-                        <Activity className="w-5 h-5 text-white" />
+                {/* Logo */}
+                <div className="flex items-center gap-2.5 shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
+                        <svg viewBox="0 0 20 20" fill="none" className="w-4.5 h-4.5">
+                            <path d="M2 10 Q5 5 10 10 Q15 15 18 10" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                        </svg>
                     </div>
                     <div>
-                        <p className="text-sm font-700 text-gray-900 leading-tight font-bold">Breathometer AI</p>
-                        <p className="text-[10px] text-emerald-600 font-medium leading-tight">Air Quality & Lung Health</p>
+                        <p className="text-sm font-bold text-gray-900 leading-none">Breathometer AI</p>
+                        <p className="text-[10px] text-emerald-600 font-medium mt-0.5">Air Quality & Lung Health</p>
                     </div>
                 </div>
 
-                {/* ─── Navigation Tabs ───────────────────── */}
-                <nav className="flex items-center gap-1 bg-gray-50 rounded-full p-1">
+                {/* Navigation Tabs */}
+                <nav className="flex items-center gap-1">
                     {tabs.map((tab) => (
                         <button
                             key={tab}
                             onClick={() => onTabChange(tab)}
-                            className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeTab === tab
-                                    ? "text-emerald-700"
-                                    : "text-gray-500 hover:text-gray-700"
+                            className={`relative px-4 py-1.5 rounded-full text-sm transition-colors ${activeTab === tab
+                                    ? "text-emerald-700 font-semibold"
+                                    : "text-gray-500 hover:text-gray-700 font-medium"
                                 }`}
                         >
                             {activeTab === tab && (
                                 <motion.div
-                                    layoutId="active-tab"
-                                    className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-full"
-                                    transition={{ type: "spring", bounce: 0.25, duration: 0.4 }}
+                                    layoutId="nav-pill"
+                                    className="absolute inset-0 bg-emerald-50 border border-emerald-200 rounded-full"
+                                    transition={{ type: "spring", bounce: 0.2, duration: 0.35 }}
                                 />
                             )}
-                            <span className="relative z-10">{tab}</span>
+                            <span className="relative">{tab}</span>
                         </button>
                     ))}
                 </nav>
 
-                {/* ─── Right Actions ─────────────────────── */}
-                <div className="flex items-center gap-3">
-                    {/* Search */}
+                {/* Right actions */}
+                <div className="flex items-center gap-2">
                     <AnimatePresence>
                         {searchOpen ? (
                             <motion.input
                                 initial={{ width: 0, opacity: 0 }}
-                                animate={{ width: 200, opacity: 1 }}
+                                animate={{ width: 180, opacity: 1 }}
                                 exit={{ width: 0, opacity: 0 }}
-                                transition={{ duration: 0.25 }}
+                                transition={{ duration: 0.2 }}
                                 autoFocus
                                 onBlur={() => setSearchOpen(false)}
-                                placeholder="Search city, location…"
-                                className="outline-none border border-emerald-200 rounded-full px-4 py-1.5 text-sm bg-white text-gray-700 placeholder-gray-400"
+                                placeholder="Search location…"
+                                className="outline-none border border-gray-200 rounded-full px-3 py-1.5 text-sm bg-white text-gray-700 placeholder-gray-400"
                             />
                         ) : (
                             <button
                                 onClick={() => setSearchOpen(true)}
-                                className="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
                             >
-                                <Search className="w-4.5 h-4.5" />
+                                <Search className="w-4 h-4" />
                             </button>
                         )}
                     </AnimatePresence>
 
-                    {/* Notifications */}
-                    <button className="relative w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition">
-                        <Bell className="w-4.5 h-4.5" />
+                    <button className="relative w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
+                        <Bell className="w-4 h-4" />
                         {notificationCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-orange-400 border-2 border-white" />
+                            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-white" />
                         )}
                     </button>
 
-                    {/* Settings */}
-                    <button className="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition">
-                        <Settings className="w-4.5 h-4.5" />
+                    <button className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
+                        <Settings className="w-4 h-4" />
                     </button>
 
-                    {/* Profile */}
-                    <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 transition border border-emerald-100">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold">
+                    <div className="w-px h-5 bg-gray-200 mx-1" />
+
+                    <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
+                        <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold">
                             D
                         </div>
                         <span className="text-sm font-medium text-gray-700">Dr. Sarah</span>

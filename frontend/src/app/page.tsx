@@ -17,10 +17,11 @@ import { MapPin, ChevronDown } from "lucide-react";
 
 type Tab = "Dashboard" | "History" | "Reports" | "Alerts";
 
-const pageVariants = {
-  initial: { opacity: 0, y: 8 },
+const fade = {
+  initial: { opacity: 0, y: 6 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
+  exit: { opacity: 0, y: -6 },
+  transition: { duration: 0.2 },
 };
 
 export default function HomePage() {
@@ -28,64 +29,49 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      {/* Navigation */}
-      <Navbar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        notificationCount={3}
-      />
+      <Navbar activeTab={activeTab} onTabChange={setActiveTab} notificationCount={3} />
 
-      {/* Main content */}
       <main className="max-w-[1400px] mx-auto px-6 py-6">
 
-        {/* Location sub-header (only on Dashboard) */}
+        {/* Page sub-header (Dashboard only) */}
         {activeTab === "Dashboard" && (
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">
-              Live Monitoring{" "}
-              <span className="text-sm font-normal text-gray-400 ml-2">
-                {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} · Auto-refresh every 60s
-              </span>
-            </h2>
-            <button className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:shadow transition">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
-                <MapPin className="w-3 h-3 text-white" />
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Live Monitoring</h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                {" · "}Auto-refresh every 60s
+              </p>
+            </div>
+            <button className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition shadow-sm">
+              <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center">
+                <MapPin className="w-2.5 h-2.5 text-emerald-600" />
               </div>
               San Francisco, CA
-              <span className="text-[10px] text-amber-500 font-medium bg-amber-50 rounded-full px-2 py-0.5">AQI 85 · Moderate</span>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <span className="badge badge-moderate ml-1">AQI 85</span>
+              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
             </button>
           </div>
         )}
 
         <AnimatePresence mode="wait">
           {activeTab === "Dashboard" && (
-            <motion.div
-              key="dashboard"
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.25 }}
-            >
-              {/* Hero Banner */}
+            <motion.div key="dashboard" {...fade}>
+              {/* Hero */}
               <HeroBanner />
 
-              {/* Live Monitoring header */}
-              <h3 className="text-base font-semibold text-gray-700 mb-3">Live Monitoring</h3>
-
-              {/* Metric cards row */}
+              {/* Metric cards */}
               <MetricCards />
 
-              {/* Core cards: AQI | Lung | AI Insights */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              {/* 3-column core cards — equal width */}
+              <div className="grid grid-cols-3 gap-5 mb-5">
                 <AQIGaugeCard />
                 <LungHealthCard />
                 <AIInsightsCard />
               </div>
 
-              {/* Bottom row: Trend chart + Alerts */}
-              <div className="flex gap-4">
+              {/* Bottom row: chart fills, sidebar fixed */}
+              <div className="flex gap-5">
                 <AQITrendChart />
                 <AlertsSidebar />
               </div>
@@ -93,40 +79,19 @@ export default function HomePage() {
           )}
 
           {activeTab === "History" && (
-            <motion.div
-              key="history"
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.25 }}
-            >
+            <motion.div key="history" {...fade}>
               <HistoryView />
             </motion.div>
           )}
 
           {activeTab === "Reports" && (
-            <motion.div
-              key="reports"
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.25 }}
-            >
+            <motion.div key="reports" {...fade}>
               <ReportsView />
             </motion.div>
           )}
 
           {activeTab === "Alerts" && (
-            <motion.div
-              key="alerts"
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.25 }}
-            >
+            <motion.div key="alerts" {...fade}>
               <AlertsView />
             </motion.div>
           )}
@@ -134,13 +99,13 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-12 border-t border-gray-100 py-6">
-        <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between text-xs text-gray-400">
-          <span>© 2026 Breathometer AI. Production-grade from day one.</span>
-          <div className="flex items-center gap-4">
-            <a href="#" className="hover:text-gray-600 transition">Privacy</a>
-            <a href="#" className="hover:text-gray-600 transition">Terms</a>
-            <a href="#" className="hover:text-gray-600 transition">Support</a>
+      <footer className="mt-16 border-t border-gray-100 py-5">
+        <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
+          <p className="text-xs text-gray-400">© 2026 Breathometer AI. Production-grade from day one.</p>
+          <div className="flex items-center gap-6">
+            {["Privacy", "Terms", "Support"].map(l => (
+              <a key={l} href="#" className="text-xs text-gray-400 hover:text-gray-600 transition">{l}</a>
+            ))}
           </div>
         </div>
       </footer>
